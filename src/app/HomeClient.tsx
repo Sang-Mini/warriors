@@ -525,10 +525,11 @@ function CardWishlistBtn({
 
 // ── 대회 카드 ─────────────────────────────────────────────────────────────────
 function TournamentCard({
-  t, onSelect, user, wishlisted, onWishlistToggle,
+  t, onSelect, onPrefetch, user, wishlisted, onWishlistToggle,
 }: {
   t: Tournament;
   onSelect: (id: string) => void;
+  onPrefetch: (id: string) => void;
   user: User | null;
   wishlisted: Set<string>;
   onWishlistToggle: (id: string) => void;
@@ -553,6 +554,7 @@ function TournamentCard({
         ref.current.style.boxShadow = sHov;
         ref.current.style.transform = "translateY(-2px)";
         ref.current.style.borderColor = urgent ? "#C4B5FD" : "rgba(108,60,225,0.22)";
+        onPrefetch(t.id);
       }}
       onMouseLeave={() => {
         if (!ref.current) return;
@@ -975,6 +977,7 @@ export default function HomeClient({
               displayed.map((t) => (
                 <TournamentCard key={t.id} t={t}
                   onSelect={(id) => router.push(`/tournaments/${id}`)}
+                  onPrefetch={(id) => router.prefetch(`/tournaments/${id}`)}
                   user={currentUser}
                   wishlisted={wishlisted}
                   onWishlistToggle={handleWishlistToggle} />
