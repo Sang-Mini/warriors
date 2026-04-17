@@ -29,10 +29,33 @@ export default async function AdminPage() {
     `)
     .order("created_at", { ascending: false });
 
+  const normalizedTournaments: AdminTournament[] = (tournaments ?? []).map((row) => {
+    const raw = row as Record<string, unknown>;
+    const sportsRaw = Array.isArray(raw.sports)
+      ? (raw.sports[0] ?? null)
+      : (raw.sports ?? null);
+    const s = sportsRaw as { name: string; emoji: string | null } | null;
+    return {
+      id:                   raw.id                   as string,
+      title:                raw.title                as string,
+      region:               raw.region               as string,
+      start_date:           raw.start_date           as string,
+      registration_start:   (raw.registration_start  as string | null) ?? null,
+      deadline:             (raw.deadline            as string | null) ?? null,
+      location:             (raw.location            as string | null) ?? null,
+      fee:                  (raw.fee                 as number | null) ?? null,
+      apply_url:            (raw.apply_url           as string | null) ?? null,
+      is_beginner_friendly: (raw.is_beginner_friendly as boolean | null) ?? false,
+      description:          (raw.description         as string | null) ?? null,
+      sport_id:             raw.sport_id             as string,
+      sports:               s,
+    };
+  });
+
   return (
     <AdminClient
       sports={(sports ?? []) as Sport[]}
-      initialTournaments={(tournaments ?? []) as AdminTournament[]}
+      initialTournaments={normalizedTournaments}
     />
   );
 }
