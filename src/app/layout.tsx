@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import BottomTabBar from "@/components/BottomTabBar";
-import PageTransition from "@/components/PageTransition";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -41,8 +40,8 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css"
         />
       </head>
-      <body className="min-h-full flex flex-col antialiased overflow-x-hidden">
-        <PageTransition>{children}</PageTransition>
+      <body className="min-h-full flex flex-col antialiased">
+        {children}
         <BottomTabBar />
       </body>
     </html>
