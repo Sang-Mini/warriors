@@ -174,6 +174,91 @@ function Divider() {
   return <div style={{ height: 1, background: "rgba(0,0,0,0.06)", margin: "16px 0" }} />;
 }
 
+// ── 신청 확인 모달 ────────────────────────────────────────────────────────────
+function ApplyConfirmModal({ title, loading, onConfirm, onCancel }: {
+  title: string;
+  loading: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "0 16px",
+      }}
+      onClick={onCancel}
+    >
+      <div
+        style={{
+          width: "100%", maxWidth: 360,
+          background: "#fff", borderRadius: 20,
+          padding: "28px 24px",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{
+          width: 48, height: 48, borderRadius: 14,
+          background: "#EDE8FF", margin: "0 auto 16px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
+            <circle cx="11" cy="11" r="10" stroke={C.secondary} strokeWidth="1.8"/>
+            <path d="M7 11l3 3 5-5" stroke={C.secondary} strokeWidth="2"
+              strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text,
+          textAlign: "center", marginBottom: 8, letterSpacing: "-0.02em" }}>
+          신청 완료하셨나요?
+        </h2>
+        <p style={{ fontSize: 13, color: C.text, textAlign: "center",
+          lineHeight: 1.5, marginBottom: 4, fontWeight: 600 }}>
+          {title}
+        </p>
+        <p style={{ fontSize: 12, color: C.sub, textAlign: "center",
+          lineHeight: 1.6, marginBottom: 24 }}>
+          신청하셨다면 내역을 저장해드릴게요
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={onCancel}
+            style={{
+              flex: 1, height: 48, borderRadius: 12,
+              border: "1px solid rgba(108,60,225,0.2)", background: "#fff",
+              fontSize: 14, fontWeight: 600, color: C.sub,
+              cursor: "pointer", transition: `background 150ms ${EASE}`,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f7ff"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; }}
+          >
+            아니요
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            style={{
+              flex: 1, height: 48, borderRadius: 12, border: "none",
+              background: `linear-gradient(135deg, ${C.primary}, ${C.secondary})`,
+              fontSize: 14, fontWeight: 700, color: "#fff",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1,
+              transition: `filter 150ms ${EASE}`,
+            }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.filter = "brightness(1.08)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
+          >
+            {loading ? "저장 중…" : "네, 신청했어요"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 메인 컴포넌트 ─────────────────────────────────────────────────────────────
 export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
   const router = useRouter();
@@ -183,6 +268,9 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
   const [toastShow,     setToastShow]    = useState(false);
   const [toastMsg,      setToastMsg]    = useState("");
   const [toastDuration, setToastDuration] = useState(1800);
+  const [applied,        setApplied]        = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyLoading,   setApplyLoading]   = useState(false);
 
   const dday         = getDday(t.start_date);
   const deadlineDday = t.deadline ? getDday(t.deadline) : null;
@@ -208,6 +296,13 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
         .eq("tournament_id", t.id)
         .maybeSingle()
         .then(({ data }) => { if (data) setLiked(true); });
+      supabase
+        .from("tournament_applications")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("tournament_id", t.id)
+        .maybeSingle()
+        .then(({ data }) => { if (data) setApplied(true); });
     });
 
     // 인증 상태 변화 구독 (로그아웃 시 찜 상태 초기화)
@@ -245,6 +340,27 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
     }
   };
 
+  const handleApplyConfirm = async () => {
+    setApplyLoading(true);
+    const supabase = createClientSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setApplyLoading(false);
+      setShowApplyModal(false);
+      showToast("로그인이 필요해요", 1200);
+      setTimeout(() => router.push("/login"), 1200);
+      return;
+    }
+    await supabase.from("tournament_applications").upsert(
+      { user_id: user.id, tournament_id: t.id, applied_at: new Date().toISOString() },
+      { onConflict: "user_id,tournament_id" }
+    );
+    setApplyLoading(false);
+    setShowApplyModal(false);
+    setApplied(true);
+    showToast("신청 내역이 저장됐어요 ✓");
+  };
+
   const copyLocation = async () => {
     if (!t.location) return;
     try {
@@ -265,6 +381,15 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
     <div style={{ display: "flex", flexDirection: "column", background: C.surface }}>
       <Header />
       <Toast visible={toastShow} message={toastMsg} duration={toastDuration} onClose={() => setToastShow(false)} position="bottom" />
+
+      {showApplyModal && (
+        <ApplyConfirmModal
+          title={t.title}
+          loading={applyLoading}
+          onConfirm={handleApplyConfirm}
+          onCancel={() => setShowApplyModal(false)}
+        />
+      )}
 
       {/* 하단 고정 CTA */}
       <div style={{
@@ -297,36 +422,55 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
             </svg>
           </button>
 
-          {/* 신청하러 가기 */}
-          <button
-            onClick={() => canApply && t.apply_url &&
-              window.open(t.apply_url, "_blank", "noopener,noreferrer")}
-            disabled={!canApply}
-            className="font-suit font-bold"
-            style={{ flex: 1, height: 52, borderRadius: 12,
-              border: "none", cursor: canApply ? "pointer" : "not-allowed",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-              fontSize: 15,
-              ...(canApply ? {
-                background: `linear-gradient(135deg, ${C.primary} 0%, ${C.secondary} 100%)`,
-                color: "#fff",
-                boxShadow: "0 4px 16px rgba(27,20,100,0.25)",
-                transition: `filter 150ms ${EASE}, transform 150ms ${EASE}`,
-              } : { background: "#F2F2F7", color: "#AEAEB2" }) }}
-            onMouseEnter={(e) => { if (canApply) e.currentTarget.style.filter = "brightness(1.08)"; }}
-            onMouseLeave={(e) => { if (canApply) e.currentTarget.style.filter = "brightness(1)"; }}
-            onMouseDown={(e) => { if (canApply) e.currentTarget.style.transform = "scale(0.97)"; }}
-            onMouseUp={(e)   => { if (canApply) e.currentTarget.style.transform = "scale(1)"; }}>
-            {canApply ? (
-              <>
-                신청하러 가기
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden>
-                  <path d="M3.5 9H14.5M10 4.5L14.5 9L10 13.5"
-                    stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </>
-            ) : "신청 링크가 없어요"}
-          </button>
+          {/* 신청하러 가기 / 신청 완료 */}
+          {applied ? (
+            <div
+              className="font-suit font-bold"
+              style={{ flex: 1, height: 52, borderRadius: 12,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                fontSize: 15, background: "#E0FFF0", color: "#065F46",
+                border: "1.5px solid #86efac" }}>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
+                <circle cx="10" cy="10" r="9" stroke="#22c55e" strokeWidth="1.8"/>
+                <path d="M6 10l3 3 5-5" stroke="#22c55e" strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              신청 완료
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                if (!canApply || !t.apply_url) return;
+                window.open(t.apply_url, "_blank", "noopener,noreferrer");
+                if (isLoggedIn) setShowApplyModal(true);
+              }}
+              disabled={!canApply}
+              className="font-suit font-bold"
+              style={{ flex: 1, height: 52, borderRadius: 12,
+                border: "none", cursor: canApply ? "pointer" : "not-allowed",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                fontSize: 15,
+                ...(canApply ? {
+                  background: `linear-gradient(135deg, ${C.primary} 0%, ${C.secondary} 100%)`,
+                  color: "#fff",
+                  boxShadow: "0 4px 16px rgba(27,20,100,0.25)",
+                  transition: `filter 150ms ${EASE}, transform 150ms ${EASE}`,
+                } : { background: "#F2F2F7", color: "#AEAEB2" }) }}
+              onMouseEnter={(e) => { if (canApply) e.currentTarget.style.filter = "brightness(1.08)"; }}
+              onMouseLeave={(e) => { if (canApply) e.currentTarget.style.filter = "brightness(1)"; }}
+              onMouseDown={(e) => { if (canApply) e.currentTarget.style.transform = "scale(0.97)"; }}
+              onMouseUp={(e)   => { if (canApply) e.currentTarget.style.transform = "scale(1)"; }}>
+              {canApply ? (
+                <>
+                  신청하러 가기
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden>
+                    <path d="M3.5 9H14.5M10 4.5L14.5 9L10 13.5"
+                      stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </>
+              ) : "신청 링크가 없어요"}
+            </button>
+          )}
         </div>
       </div>
 

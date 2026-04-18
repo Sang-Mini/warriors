@@ -456,6 +456,40 @@ export default function ProfileClient({
           </button>
         )}
 
+        {/* ── 내 활동 ── */}
+        <Card>
+          <div style={{ padding: "16px 20px 0" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: C.sub,
+              letterSpacing: "0.06em", marginBottom: 0 }}>
+              내 활동
+            </p>
+          </div>
+          <a href="/profile/applications"
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 20px", borderBottom: `1px solid ${C.border}`,
+              textDecoration: "none", transition: `background 150ms ${EASE}` }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f7ff"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>신청한 대회</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path d="M6 3L11 8L6 13" stroke="#AEAEB2"
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </a>
+          <a href="/wishlist"
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 20px",
+              textDecoration: "none", transition: `background 150ms ${EASE}` }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f7ff"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>찜한 대회</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <path d="M6 3L11 8L6 13" stroke="#AEAEB2"
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </a>
+        </Card>
+
         {/* ── 로그아웃 / 탈퇴 ── */}
         <Card>
           {/* 로그아웃 */}
