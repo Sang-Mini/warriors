@@ -23,20 +23,6 @@ const TABS = [
     ),
   },
   {
-    label: "내 대회",
-    href: "/my-tournaments",
-    exact: false,
-    icon: (active: boolean) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M12 2L8 8H2L7 13L5 20L12 16L19 20L17 13L22 8H16L12 2Z"
-          stroke={active ? PRIMARY : SUB} strokeWidth="1.8"
-          strokeLinecap="round" strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
     label: "마이페이지",
     href: "/profile",
     exact: false,

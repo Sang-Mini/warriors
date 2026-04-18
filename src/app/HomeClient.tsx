@@ -173,15 +173,7 @@ function Header({ onAfterLogout }: { onAfterLogout?: () => void }) {
     }}>
       <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between md:grid md:items-center" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
         <Logo id="gHdr" />
-        <nav className="hidden md:flex items-center gap-7">
-          <a href="/my-tournaments"
-            style={{ fontSize: 14, fontWeight: 500, color: C.sub,
-              transition: `color 150ms ${EASE}` }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = C.text; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = C.sub; }}>
-            내 대회
-          </a>
-        </nav>
+        <nav className="hidden md:flex items-center gap-7" />
         <div className="flex items-center justify-end gap-2.5">
           {/* 알림 버튼 */}
           <button className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -244,7 +236,6 @@ function Header({ onAfterLogout }: { onAfterLogout?: () => void }) {
                   {/* 메뉴 항목 */}
                   {(
                     [
-                      { label: "내 대회",   href: "/my-tournaments" },
                       { label: "찜한 대회", href: "/wishlist"        },
                       { label: "내 정보",   href: "/profile"         },
                     ] as { label: string; href: string }[]
@@ -282,7 +273,7 @@ function Header({ onAfterLogout }: { onAfterLogout?: () => void }) {
           ) : (
             /* 로그인 안 됨 — 로그인 버튼 */
             <a href="/login"
-              className="hidden md:flex h-9 px-5 rounded-xl text-sm text-white items-center"
+              className="flex h-9 px-5 rounded-xl text-sm text-white items-center"
               style={{
                 background: `linear-gradient(135deg, ${C.primary}, ${C.secondary})`,
                 fontWeight: 600, transition: `filter 150ms ${EASE}`,
