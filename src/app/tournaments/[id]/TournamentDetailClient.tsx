@@ -363,13 +363,13 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
           <div className="poster-area"
             style={{
               background: t.poster_url
-                ? undefined
+                ? "#0d0d1a"
                 : `linear-gradient(135deg, ${C.primary} 0%, ${C.secondary} 100%)`,
             }}
           >
             {t.poster_url ? (
               <Image src={t.poster_url} alt={`${t.title} 포스터`} fill
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: "contain", objectPosition: "center center" }}
                 sizes="(max-width: 768px) 100vw, (max-width: 1100px) 45vw, 495px" />
             ) : (
               <PosterPlaceholder t={t} />
