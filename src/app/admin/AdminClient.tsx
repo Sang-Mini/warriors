@@ -78,6 +78,7 @@ export default function AdminClient({
   const [isPending, startTransition] = useTransition();
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = editId !== null;
@@ -90,8 +91,21 @@ export default function AdminClient({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { setError("이미지는 5MB 이하만 업로드 가능해요."); return; }
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) { setError("jpg, png, webp 형식만 허용해요."); return; }
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) { setError("jpg, png, webp, svg 형식만 허용해요."); return; }
+    setError(null);
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("이미지는 5MB 이하만 업로드 가능해요."); return; }
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+    if (!allowed.includes(file.type)) { setError("jpg, png, webp, svg 형식만 허용해요."); return; }
     setError(null);
     setPosterFile(file);
     setPosterPreview(URL.createObjectURL(file));
@@ -371,16 +385,20 @@ export default function AdminClient({
                 <Field label="포스터 이미지">
                   <div
                     onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                    onDragLeave={() => setIsDragOver(false)}
+                    onDrop={handleDrop}
                     style={{
-                      borderRadius: 12, border: `1.5px dashed ${C.border}`,
-                      background: C.surface, cursor: "pointer",
-                      overflow: "hidden", position: "relative",
+                      borderRadius: 12,
+                      border: `1.5px dashed ${isDragOver ? C.secondary : C.border}`,
+                      background: isDragOver ? "#f0edff" : C.surface,
+                      cursor: "pointer", overflow: "hidden", position: "relative",
                       minHeight: posterPreview ? undefined : 100,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: `border-color 150ms ${EASE}`,
+                      transition: `border-color 150ms ${EASE}, background 150ms ${EASE}`,
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.secondary; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; }}
+                    onMouseEnter={(e) => { if (!isDragOver) e.currentTarget.style.borderColor = C.secondary; }}
+                    onMouseLeave={(e) => { if (!isDragOver) e.currentTarget.style.borderColor = C.border; }}
                   >
                     {posterPreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -392,12 +410,13 @@ export default function AdminClient({
                     ) : (
                       <div style={{ textAlign: "center", padding: "24px 16px" }}>
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ margin: "0 auto 8px" }} aria-hidden>
-                          <rect x="3" y="3" width="18" height="18" rx="3" stroke={C.sub} strokeWidth="1.5" />
-                          <path d="M3 15L8 10L12 14L16 10L21 15" stroke={C.sub} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          <circle cx="8.5" cy="7.5" r="1.5" fill={C.sub} />
+                          <path d="M12 4V14M12 4L9 7M12 4L15 7" stroke={isDragOver ? C.secondary : C.sub} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M4 17V19C4 19.55 4.45 20 5 20H19C19.55 20 20 19.55 20 19V17" stroke={isDragOver ? C.secondary : C.sub} strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
-                        <p style={{ fontSize: 13, color: C.sub, margin: 0 }}>클릭하여 이미지 선택</p>
-                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>권장 크기: 680 x 960px (세로형) · JPG, PNG, WEBP · 최대 5MB</p>
+                        <p style={{ fontSize: 13, color: isDragOver ? C.secondary : C.sub, margin: 0, fontWeight: isDragOver ? 600 : 400 }}>
+                          {isDragOver ? "여기에 놓으세요" : "이미지를 여기에 드래그하거나 클릭해서 업로드"}
+                        </p>
+                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>권장 크기: 680 x 960px (세로형) · JPG, PNG, WEBP, SVG · 최대 5MB</p>
                       </div>
                     )}
                   </div>
@@ -416,7 +435,7 @@ export default function AdminClient({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept="image/jpeg,image/png,image/webp,image/svg+xml"
                     style={{ display: "none" }}
                     onChange={handlePosterChange}
                   />
