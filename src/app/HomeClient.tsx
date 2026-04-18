@@ -236,8 +236,9 @@ function Header({ onAfterLogout }: { onAfterLogout?: () => void }) {
                   {/* 메뉴 항목 */}
                   {(
                     [
-                      { label: "찜한 대회", href: "/wishlist"        },
-                      { label: "내 정보",   href: "/profile"         },
+                      { label: "찜한 대회",   href: "/wishlist"               },
+                      { label: "신청한 대회", href: "/profile/applications"   },
+                      { label: "내 정보",     href: "/profile"                },
                     ] as { label: string; href: string }[]
                   ).map(({ label, href }) => (
                     <a key={href} href={href}
