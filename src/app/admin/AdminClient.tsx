@@ -397,7 +397,7 @@ export default function AdminClient({
                           <circle cx="8.5" cy="7.5" r="1.5" fill={C.sub} />
                         </svg>
                         <p style={{ fontSize: 13, color: C.sub, margin: 0 }}>클릭하여 이미지 선택</p>
-                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>jpg, png, webp · 최대 5MB</p>
+                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>권장 크기: 680 x 960px (세로형) · JPG, PNG, WEBP · 최대 5MB</p>
                       </div>
                     )}
                   </div>
