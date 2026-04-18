@@ -261,7 +261,7 @@ export default function ApplicationsClient({ tournaments }: { tournaments: Tourn
         borderBottom: "0.5px solid rgba(108,60,225,0.10)",
       }}>
         <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">
-          <button onClick={() => router.push("/profile")} aria-label="프로필로"
+          <button onClick={() => router.push("/")} aria-label="홈으로"
             style={{ display: "flex", alignItems: "center", gap: 5,
               fontSize: 14, fontWeight: 500, color: C.sub,
               background: "none", border: "none", cursor: "pointer",
@@ -272,7 +272,7 @@ export default function ApplicationsClient({ tournaments }: { tournaments: Tourn
               <path d="M12.5 4L7 10L12.5 16" stroke="currentColor"
                 strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            프로필
+            홈으로
           </button>
           <Logo />
           <div style={{ width: 80 }} />
