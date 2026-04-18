@@ -174,15 +174,13 @@ function Header({ onAfterLogout }: { onAfterLogout?: () => void }) {
       <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between md:grid md:items-center" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
         <Logo id="gHdr" />
         <nav className="hidden md:flex items-center gap-7">
-          {([{ label: "대회 찾기", href: "/" }, { label: "내 대회", href: "/my-tournaments" }] as { label: string; href: string }[]).map(({ label, href }) => (
-            <a key={href} href={href}
-              style={{ fontSize: 14, fontWeight: 500, color: C.sub,
-                transition: `color 150ms ${EASE}` }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = C.text; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = C.sub; }}>
-              {label}
-            </a>
-          ))}
+          <a href="/my-tournaments"
+            style={{ fontSize: 14, fontWeight: 500, color: C.sub,
+              transition: `color 150ms ${EASE}` }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = C.text; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = C.sub; }}>
+            내 대회
+          </a>
         </nav>
         <div className="flex items-center justify-end gap-2.5">
           {/* 알림 버튼 */}

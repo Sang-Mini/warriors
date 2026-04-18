@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -18,17 +19,6 @@ const TABS = [
           stroke={active ? PRIMARY : SUB} strokeWidth="1.8"
           strokeLinecap="round" strokeLinejoin="round"
         />
-      </svg>
-    ),
-  },
-  {
-    label: "대회 찾기",
-    href: "/",
-    exact: true,
-    icon: (active: boolean) => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle cx="11" cy="11" r="7" stroke={active ? PRIMARY : SUB} strokeWidth="1.8" />
-        <path d="M16.5 16.5L21 21" stroke={active ? PRIMARY : SUB} strokeWidth="1.8" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -106,9 +96,10 @@ export default function BottomTabBar() {
             const isActive = exact ? pathname === href : pathname.startsWith(href);
             const isAnimating = animatingTab === label;
             return (
-              <a
+              <Link
                 key={label}
                 href={href}
+                prefetch={true}
                 style={{
                   flex: 1, display: "flex", flexDirection: "column",
                   alignItems: "center", justifyContent: "center", gap: 2,
@@ -126,7 +117,7 @@ export default function BottomTabBar() {
                 <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, letterSpacing: "-0.01em" }}>
                   {label}
                 </span>
-              </a>
+              </Link>
             );
           })}
         </div>
