@@ -334,8 +334,8 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
       <style>{`
         .poster-area {
           position: relative;
-          height: 100%;
-          min-height: 480px;
+          aspect-ratio: 1 / 1;
+          height: auto;
           border-radius: 20px;
           overflow: hidden;
         }
@@ -343,7 +343,6 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
         @media (max-width: 768px) {
           .content-wrap  { padding: 20px 16px 100px !important; }
           .content-grid  { grid-template-columns: 1fr !important; gap: 20px !important; }
-          .poster-area   { min-height: 240px !important; }
         }
       `}</style>
 
@@ -369,7 +368,7 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
           >
             {t.poster_url ? (
               <Image src={t.poster_url} alt={`${t.title} 포스터`} fill
-                style={{ objectFit: "contain", objectPosition: "center center" }}
+                style={{ objectFit: "cover", objectPosition: "center center" }}
                 sizes="(max-width: 768px) 100vw, (max-width: 1100px) 45vw, 495px" />
             ) : (
               <PosterPlaceholder t={t} />

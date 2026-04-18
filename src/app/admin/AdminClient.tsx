@@ -416,7 +416,7 @@ export default function AdminClient({
                         <p style={{ fontSize: 13, color: isDragOver ? C.secondary : C.sub, margin: 0, fontWeight: isDragOver ? 600 : 400 }}>
                           {isDragOver ? "여기에 놓으세요" : "이미지를 여기에 드래그하거나 클릭해서 업로드"}
                         </p>
-                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>권장 크기: 680 x 960px (세로형) · JPG, PNG, WEBP, SVG · 최대 5MB</p>
+                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>권장 크기: 680 x 680px (1:1 정사각형) · JPG, PNG, WEBP, SVG · 최대 5MB</p>
                       </div>
                     )}
                   </div>
