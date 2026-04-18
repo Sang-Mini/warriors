@@ -32,7 +32,25 @@ export type TournamentInput = {
   apply_url: string | null;
   is_beginner_friendly: boolean;
   description: string | null;
+  poster_url: string | null;
 };
+
+export async function uploadPoster(formData: FormData): Promise<string> {
+  const supabase = await createAdminClient();
+  const file = formData.get("file") as File;
+  if (!file) throw new Error("파일이 없습니다.");
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("tournament-posters")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from("tournament-posters").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 export async function createTournament(input: TournamentInput) {
   const supabase = await createAdminClient();

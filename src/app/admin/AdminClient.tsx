@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import type { Sport } from "@/app/onboarding/SportSelector";
 import type { AdminTournament } from "./page";
-import { createTournament, updateTournament, deleteTournament, type TournamentInput } from "./actions";
+import { createTournament, updateTournament, deleteTournament, uploadPoster, type TournamentInput } from "./actions";
 
 // ── 디자인 토큰 ───────────────────────────────────────────────────────────────
 const C = {
@@ -32,6 +32,7 @@ const EMPTY_FORM: TournamentInput = {
   apply_url: null,
   is_beginner_friendly: false,
   description: null,
+  poster_url: null,
 };
 
 // ── 입력 필드 ─────────────────────────────────────────────────────────────────
@@ -75,11 +76,25 @@ export default function AdminClient({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = editId !== null;
 
   function setField<K extends keyof TournamentInput>(key: K, value: TournamentInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("이미지는 5MB 이하만 업로드 가능해요."); return; }
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) { setError("jpg, png, webp 형식만 허용해요."); return; }
+    setError(null);
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
   }
 
   function handleEdit(t: AdminTournament) {
@@ -96,13 +111,18 @@ export default function AdminClient({
       apply_url: t.apply_url,
       is_beginner_friendly: t.is_beginner_friendly,
       description: t.description,
+      poster_url: (t as AdminTournament & { poster_url?: string | null }).poster_url ?? null,
     });
+    setPosterFile(null);
+    setPosterPreview((t as AdminTournament & { poster_url?: string | null }).poster_url ?? null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleCancel() {
     setEditId(null);
     setForm(EMPTY_FORM);
+    setPosterFile(null);
+    setPosterPreview(null);
     setError(null);
   }
 
@@ -121,8 +141,18 @@ export default function AdminClient({
 
     startTransition(async () => {
       try {
+        let finalForm = { ...form };
+
+        // 새 파일이 있으면 Storage 업로드
+        if (posterFile) {
+          const fd = new FormData();
+          fd.append("file", posterFile);
+          const url = await uploadPoster(fd);
+          finalForm = { ...finalForm, poster_url: url };
+        }
+
         if (isEditing) {
-          await updateTournament(editId, form);
+          await updateTournament(editId, finalForm);
           setTournaments((prev) =>
             prev.map((t) => t.id === editId
               ? { ...t, ...form, sports: sports.find(s => s.id === form.sport_id) ? { name: sports.find(s => s.id === form.sport_id)!.name, emoji: sports.find(s => s.id === form.sport_id)!.emoji ?? null } : t.sports }
@@ -132,9 +162,11 @@ export default function AdminClient({
           showSuccess("대회가 수정됐어요");
           handleCancel();
         } else {
-          await createTournament(form);
+          await createTournament(finalForm);
           showSuccess("대회가 등록됐어요 🎉");
           setForm(EMPTY_FORM);
+          setPosterFile(null);
+          setPosterPreview(null);
           // 목록 갱신 (새로 추가된 항목은 id 모르니 간단히 reload 유도)
           window.location.reload();
         }
@@ -332,6 +364,63 @@ export default function AdminClient({
                   }} />
                 </button>
                 <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>초보자 환영</span>
+              </div>
+
+              {/* 포스터 이미지 */}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Field label="포스터 이미지">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      borderRadius: 12, border: `1.5px dashed ${C.border}`,
+                      background: C.surface, cursor: "pointer",
+                      overflow: "hidden", position: "relative",
+                      minHeight: posterPreview ? undefined : 100,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: `border-color 150ms ${EASE}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.secondary; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; }}
+                  >
+                    {posterPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={posterPreview}
+                        alt="포스터 미리보기"
+                        style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }}
+                      />
+                    ) : (
+                      <div style={{ textAlign: "center", padding: "24px 16px" }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ margin: "0 auto 8px" }} aria-hidden>
+                          <rect x="3" y="3" width="18" height="18" rx="3" stroke={C.sub} strokeWidth="1.5" />
+                          <path d="M3 15L8 10L12 14L16 10L21 15" stroke={C.sub} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <circle cx="8.5" cy="7.5" r="1.5" fill={C.sub} />
+                        </svg>
+                        <p style={{ fontSize: 13, color: C.sub, margin: 0 }}>클릭하여 이미지 선택</p>
+                        <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>jpg, png, webp · 최대 5MB</p>
+                      </div>
+                    )}
+                  </div>
+                  {posterPreview && (
+                    <button
+                      type="button"
+                      onClick={() => { setPosterFile(null); setPosterPreview(null); setField("poster_url", null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                      style={{
+                        marginTop: 6, fontSize: 12, color: "#EF4444", background: "none",
+                        border: "none", cursor: "pointer", padding: 0, fontWeight: 500,
+                      }}
+                    >
+                      이미지 제거
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style={{ display: "none" }}
+                    onChange={handlePosterChange}
+                  />
+                </Field>
               </div>
 
               {/* 대회 설명 */}
