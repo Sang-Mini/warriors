@@ -335,8 +335,8 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
         .poster-area {
           position: relative;
           width: 100%;
-          aspect-ratio: 1 / 1;
-          height: auto;
+          height: 100%;
+          min-height: 400px;
           border-radius: 20px;
           overflow: hidden;
         }
@@ -356,7 +356,7 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
         {/* 1. 2컬럼 그리드 */}
         <div className="content-grid" style={{
           display: "grid", gridTemplateColumns: "9fr 11fr",
-          gap: 32, alignItems: "start", boxSizing: "border-box",
+          gap: 32, alignItems: "stretch", boxSizing: "border-box",
         }}>
 
           {/* 좌측: 포스터 */}
