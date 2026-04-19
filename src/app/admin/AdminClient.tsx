@@ -503,7 +503,7 @@ export default function AdminClient({
                         if (val.endsWith(",")) { addTag(val.slice(0, -1)); }
                         else { setTagInput(val); }
                       }}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(tagInput); } }}
+                      onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); addTag(tagInput); } }}
                       placeholder={(form.tags?.length ?? 0) === 0 ? "예: 50K, 하프, 노기 (Enter로 추가)" : "태그 추가..."}
                       style={{
                         border: "none", outline: "none", fontSize: 14,
