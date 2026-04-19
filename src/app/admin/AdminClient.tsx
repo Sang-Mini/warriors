@@ -33,6 +33,7 @@ const EMPTY_FORM: TournamentInput = {
   is_beginner_friendly: false,
   description: null,
   poster_url: null,
+  tags: null,
 };
 
 // ── 입력 필드 ─────────────────────────────────────────────────────────────────
@@ -79,12 +80,27 @@ export default function AdminClient({
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [tagInput, setTagInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = editId !== null;
 
   function setField<K extends keyof TournamentInput>(key: K, value: TournamentInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function addTag(raw: string) {
+    const items = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (items.length === 0) return;
+    const existing = form.tags ?? [];
+    const merged = [...new Set([...existing, ...items])];
+    setField("tags", merged.length > 0 ? merged : null);
+    setTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    const next = (form.tags ?? []).filter((t) => t !== tag);
+    setField("tags", next.length > 0 ? next : null);
   }
 
   function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -126,7 +142,9 @@ export default function AdminClient({
       is_beginner_friendly: t.is_beginner_friendly,
       description: t.description,
       poster_url: (t as AdminTournament & { poster_url?: string | null }).poster_url ?? null,
+      tags: t.tags ?? null,
     });
+    setTagInput("");
     setPosterFile(null);
     setPosterPreview((t as AdminTournament & { poster_url?: string | null }).poster_url ?? null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -137,6 +155,7 @@ export default function AdminClient({
     setForm(EMPTY_FORM);
     setPosterFile(null);
     setPosterPreview(null);
+    setTagInput("");
     setError(null);
   }
 
@@ -181,6 +200,7 @@ export default function AdminClient({
           setForm(EMPTY_FORM);
           setPosterFile(null);
           setPosterPreview(null);
+          setTagInput("");
           // 목록 갱신 (새로 추가된 항목은 id 모르니 간단히 reload 유도)
           window.location.reload();
         }
@@ -439,6 +459,61 @@ export default function AdminClient({
                     style={{ display: "none" }}
                     onChange={handlePosterChange}
                   />
+                </Field>
+              </div>
+
+              {/* 태그 */}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Field label="태그">
+                  <div style={{
+                    borderRadius: 10, border: `1.5px solid ${C.border}`,
+                    background: "#fff", padding: "8px 12px",
+                    transition: `border-color 150ms ${EASE}`,
+                  }}
+                    onFocusCapture={(e) => { e.currentTarget.style.borderColor = C.secondary; }}
+                    onBlurCapture={(e) => { e.currentTarget.style.borderColor = C.border; }}
+                  >
+                    {(form.tags?.length ?? 0) > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                        {(form.tags ?? []).map((tag) => (
+                          <span key={tag} style={{
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            fontSize: 12, padding: "3px 10px", borderRadius: 100,
+                            background: "#EDE8FF", color: C.secondary, fontWeight: 600,
+                          }}>
+                            #{tag}
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              style={{
+                                background: "none", border: "none", cursor: "pointer",
+                                padding: 0, lineHeight: 1, color: C.secondary,
+                                fontSize: 15, display: "flex", alignItems: "center",
+                              }}
+                            >×</button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={tagInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.endsWith(",")) { addTag(val.slice(0, -1)); }
+                        else { setTagInput(val); }
+                      }}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(tagInput); } }}
+                      placeholder={(form.tags?.length ?? 0) === 0 ? "예: 50K, 하프, 노기 (Enter로 추가)" : "태그 추가..."}
+                      style={{
+                        border: "none", outline: "none", fontSize: 14,
+                        color: C.text, width: "100%", background: "transparent",
+                      }}
+                    />
+                  </div>
+                  <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+                    Enter 또는 쉼표(,)로 태그를 추가하세요
+                  </p>
                 </Field>
               </div>
 

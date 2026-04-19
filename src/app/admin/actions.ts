@@ -33,6 +33,7 @@ export type TournamentInput = {
   is_beginner_friendly: boolean;
   description: string | null;
   poster_url: string | null;
+  tags: string[] | null;
 };
 
 export async function uploadPoster(formData: FormData): Promise<string> {
