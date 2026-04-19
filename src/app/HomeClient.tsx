@@ -443,21 +443,78 @@ function FilterBar({ sport, sportName, region, dateDays, onSport, onSportName, o
       background: "rgba(248,247,255,0.95)", backdropFilter: "blur(12px)",
       WebkitBackdropFilter: "blur(12px)",
       borderBottom: "0.5px solid rgba(108,60,225,0.12)" }}>
+      <style>{`
+        @keyframes filterFadeSlide {
+          from { opacity: 0; transform: translateX(8px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes filterFadeBack {
+          from { opacity: 0; transform: translateX(-8px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
       <div className="max-w-[1200px] mx-auto px-6 py-3" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <FilterRow label="종목">
-          {categories.map((s) => (
-            <Chip key={s} label={s} active={sport === s}
-              onClick={() => onSport(sport === s ? null : s)} />
-          ))}
-        </FilterRow>
-        {sport && subSports.length > 0 && (
-          <FilterRow label="">
-            {subSports.map((s) => (
-              <Chip key={s} label={s} active={sportName === s}
-                onClick={() => onSportName(sportName === s ? null : s)} />
-            ))}
-          </FilterRow>
-        )}
+
+        {/* 종목 행 — 드릴다운 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <span style={{
+            flexShrink: 0, fontSize: 11, fontWeight: 700,
+            color: "#9CA3AF", letterSpacing: "0.06em",
+            marginRight: 10, whiteSpace: "nowrap", textTransform: "uppercase",
+          }}>
+            종목
+          </span>
+          <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+            <div
+              key={sport ?? "__cat__"}
+              className="scrollbar-hide"
+              style={{
+                display: "flex", gap: 6, overflowX: "auto", paddingRight: 32,
+                animation: `${sport ? "filterFadeSlide" : "filterFadeBack"} 0.18s ease`,
+              }}
+            >
+              {sport ? (
+                <>
+                  {/* 뒤로가기 버튼 */}
+                  <button
+                    onClick={() => { onSport(null); }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      height: 30, padding: "0 12px 0 8px", borderRadius: 20, flexShrink: 0,
+                      background: `linear-gradient(135deg, ${C.primary}, ${C.secondary})`,
+                      color: "#fff", fontSize: 12, fontWeight: 700,
+                      border: "none", cursor: "pointer", whiteSpace: "nowrap",
+                      transition: `filter 120ms ${EASE}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.12)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden>
+                      <path d="M7.5 2L3.5 6L7.5 10" stroke="#fff" strokeWidth="1.8"
+                        strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {sport}
+                  </button>
+                  {subSports.map((s) => (
+                    <Chip key={s} label={s} active={sportName === s}
+                      onClick={() => onSportName(sportName === s ? null : s)} />
+                  ))}
+                </>
+              ) : (
+                categories.map((s) => (
+                  <Chip key={s} label={s} active={false}
+                    onClick={() => onSport(s)} />
+                ))
+              )}
+            </div>
+            <div style={{
+              position: "absolute", top: 0, right: 0, width: 40, height: "100%",
+              background: "linear-gradient(to right, transparent, rgba(248,247,255,0.95))",
+              pointerEvents: "none",
+            }} />
+          </div>
+        </div>
+
         <FilterRow label="지역">
           {REGION_FILTERS.map((r) => (
             <Chip key={r} label={r} active={region === r}
