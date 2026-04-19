@@ -90,7 +90,7 @@ export default function AdminClient({
   }
 
   function addTag(raw: string) {
-    const items = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    const items = raw.split(",").map((s) => s.trim().replace(/^#+/, "")).filter(Boolean);
     if (items.length === 0) return;
     const existing = form.tags ?? [];
     const merged = [...new Set([...existing, ...items])];
