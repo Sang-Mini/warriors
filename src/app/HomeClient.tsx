@@ -525,9 +525,10 @@ function TournamentCard({
   wishlisted: Set<string>;
   onWishlistToggle: (id: string) => void;
 }) {
-  const dday   = getDday(t.start_date);
-  const urgent = dday >= 0 && dday <= 7;
-  const cat    = CAT_STYLE[t.sports?.category ?? ""] ?? CAT_DEFAULT;
+  const dday         = getDday(t.start_date);
+  const urgent       = dday >= 0 && dday <= 7;
+  const deadlineDday = t.deadline ? getDday(t.deadline) : null;
+  const cat          = CAT_STYLE[t.sports?.category ?? ""] ?? CAT_DEFAULT;
   const ref    = useRef<HTMLElement>(null);
 
   const s0   = "0 2px 8px rgba(108,60,225,0.08)";
@@ -637,18 +638,34 @@ function TournamentCard({
         </button>
       </div>
 
-      {urgent && dday >= 0 && (
+      {dday < 0 ? (
         <div style={{ display: "flex", alignItems: "center", gap: 7,
           margin: "12px -24px -16px", padding: "9px 24px",
-          background: "#EDE0FF", borderTop: "1px solid #DDD0FF",
+          background: "#F9FAFB", borderTop: "1px solid #E5E7EB",
+          borderRadius: "0 0 20px 20px" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#9CA3AF" }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF" }}>종료된 대회예요</span>
+        </div>
+      ) : deadlineDday !== null && deadlineDday < 0 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 7,
+          margin: "12px -24px -16px", padding: "9px 24px",
+          background: "#F9FAFB", borderTop: "1px solid #E5E7EB",
+          borderRadius: "0 0 20px 20px" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#9CA3AF" }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF" }}>접수가 마감되었어요</span>
+        </div>
+      ) : deadlineDday !== null && deadlineDday <= 7 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 7,
+          margin: "12px -24px -16px", padding: "9px 24px",
+          background: "#FFF5F5", borderTop: "1px solid #FEE2E2",
           borderRadius: "0 0 20px 20px" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%",
-            background: C.secondary, animation: "pulse 1.5s infinite" }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: C.secondary }}>
-            {dday === 0 ? "오늘 마감이에요!" : `마감 ${dday}일 전이에요`}
+            background: "#EF4444", animation: "pulse 1.5s infinite" }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#EF4444" }}>
+            {deadlineDday === 0 ? "접수 마감 D-DAY" : `접수 마감 D-${deadlineDday}`}
           </span>
         </div>
-      )}
+      ) : null}
     </article>
   );
 }
