@@ -820,13 +820,13 @@ function Footer() {
 
 // ── 메인 HomeClient ───────────────────────────────────────────────────────────
 export default function HomeClient({
-  tournaments, errorMessage,
-}: { tournaments: Tournament[]; errorMessage: string | null }) {
+  tournaments, sports, errorMessage,
+}: { tournaments: Tournament[]; sports: Sport[]; errorMessage: string | null }) {
   const router      = useRouter();
   const searchParams = useSearchParams();
 
   const categories = [...new Set(
-    tournaments.map((t) => t.sports?.category).filter(Boolean) as string[]
+    sports.map((s) => s.category).filter(Boolean) as string[]
   )];
 
   const [search,      setSearch]      = useState("");
@@ -847,13 +847,13 @@ export default function HomeClient({
   const subSports = useMemo(() =>
     sport
       ? [...new Set(
-          tournaments
-            .filter((t) => t.sports?.category === sport)
-            .map((t) => t.sports?.name)
+          sports
+            .filter((s) => s.category === sport)
+            .map((s) => s.name)
             .filter(Boolean) as string[]
         )]
       : [],
-  [tournaments, sport]);
+  [sports, sport]);
 
   const filtered = useMemo(() => tournaments.filter((t) => {
     const q = search.toLowerCase();

@@ -1,11 +1,22 @@
 import { Suspense } from "react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import HomeClient, { type Tournament } from "./HomeClient";
+import HomeClient, { type Tournament, type Sport } from "./HomeClient";
 
 export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
 
   const today = new Date().toISOString().split("T")[0];
+
+  const { data: sportsData } = await supabase
+    .from("sports")
+    .select("name, category, emoji")
+    .order("category");
+
+  const sports: Sport[] = (sportsData ?? []).map((s) => ({
+    name:     s.name     as string,
+    category: s.category as string,
+    emoji:    (s.emoji   as string | null) ?? null,
+  }));
 
   /*
    * tournaments 실제 컬럼:
@@ -72,7 +83,7 @@ export default async function HomePage() {
 
   return (
     <Suspense fallback={null}>
-      <HomeClient tournaments={tournaments} errorMessage={error?.message ?? null} />
+      <HomeClient tournaments={tournaments} sports={sports} errorMessage={error?.message ?? null} />
     </Suspense>
   );
 }
