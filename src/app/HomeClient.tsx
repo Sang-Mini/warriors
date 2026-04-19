@@ -468,15 +468,16 @@ function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate }: {
 // ── D-day 뱃지 ────────────────────────────────────────────────────────────────
 function DdayBadge({ dday }: { dday: number }) {
   const urgent = dday >= 0 && dday <= 7;
+  const isPast = dday < 0;
   return (
     <span className="font-suit font-extrabold"
       style={{ fontSize: 11, fontVariantNumeric: "tabular-nums",
         letterSpacing: "0.04em",
         padding: "3px 8px", borderRadius: 8, whiteSpace: "nowrap",
-        background: "#ffffff",
-        color:      urgent ? C.secondary : C.sub,
+        background: isPast ? "#F3F4F6" : "#ffffff",
+        color:      isPast ? "#9CA3AF" : urgent ? C.secondary : C.sub,
         boxShadow: "0 1px 4px rgba(0,0,0,0.12)" }}>
-      {dday === 0 ? "D-DAY" : dday < 0 ? `D+${Math.abs(dday)}` : `D-${dday}`}
+      {dday === 0 ? "D-DAY" : isPast ? "마감" : `D-${dday}`}
     </span>
   );
 }

@@ -95,25 +95,27 @@ function Header() {
 }
 
 // ── D-day 미니 카드 (우측 패널용) ────────────────────────────────────────────
-function MiniDday({ dday, label, total }: { dday: number; label: string; total?: number }) {
-  const urgent  = dday >= 0 && dday <= 7;
-  const isToday = dday === 0;
-  const isPast  = dday < 0;
-  const text    = isToday ? "D-DAY" : isPast ? `D+${Math.abs(dday)}` : `D-${dday}`;
+function MiniDday({ dday, label, total, closedLabel }: {
+  dday: number; label: string; total?: number; closedLabel?: string;
+}) {
+  const urgent   = dday >= 0 && dday <= 7;
+  const isToday  = dday === 0;
+  const isPast   = dday < 0;
+  const isClosed = isPast && !!closedLabel;
+  const text     = isClosed ? closedLabel! : isToday ? "D-DAY" : isPast ? `D+${Math.abs(dday)}` : `D-${dday}`;
 
   const showProgress = total != null && total > 0 && !isPast;
-  // 남은 비율 (오른쪽→왼쪽으로 줄어드는 방향: 남은 기간만큼 왼쪽부터 채움)
   const remaining = showProgress
     ? Math.max(0, Math.min(100, (dday / total) * 100))
     : 0;
 
   return (
     <div style={{ flex: 1, borderRadius: 12,
-      background: urgent ? "#fff0f0" : "#f0edff",
-      border: `1.5px solid ${urgent ? "#FFCDD2" : "rgba(108,60,225,0.3)"}` }}>
+      background: isClosed ? "#F3F4F6" : urgent ? "#fff0f0" : "#f0edff",
+      border: `1.5px solid ${isClosed ? "#E5E7EB" : urgent ? "#FFCDD2" : "rgba(108,60,225,0.3)"}` }}>
       <div style={{ padding: "12px 14px" }}>
         <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 4,
-          color: urgent ? "#E24B4A" : C.primary }}>
+          color: isClosed ? "#9CA3AF" : urgent ? "#E24B4A" : C.primary }}>
           {label}
         </p>
         <div style={{ display: "flex", alignItems: "flex-end",
@@ -121,7 +123,7 @@ function MiniDday({ dday, label, total }: { dday: number; label: string; total?:
           <p className="font-suit font-extrabold"
             style={{ fontSize: 26, lineHeight: 1,
               letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums",
-              color: urgent ? "#E24B4A" : C.primary }}>
+              color: isClosed ? "#9CA3AF" : urgent ? "#E24B4A" : C.primary }}>
             {text}
           </p>
           {urgent && (
@@ -568,7 +570,7 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
                 <MiniDday dday={dday} label="대회 시작까지" total={startTotal} />
                 {deadlineDday !== null ? (
                   <MiniDday dday={deadlineDday} label="접수 마감까지"
-                    total={deadlineTotal} />
+                    total={deadlineTotal} closedLabel="접수 마감" />
                 ) : (
                   <div style={{ flex: 1, borderRadius: 12, padding: "12px 14px",
                     background: "#ffffff", border: "1.5px solid rgba(108,60,225,0.3)",
