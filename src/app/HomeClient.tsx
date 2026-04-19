@@ -42,7 +42,6 @@ export type Tournament = {
 };
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
-const SPORT_FILTERS  = ["격투기", "두뇌스포츠", "e스포츠", "학습", "구기종목", "수영", "육상", "사이클", "양궁", "골프", "테니스", "배드민턴", "탁구", "볼링", "당구", "댄스스포츠"];
 const REGION_FILTERS = ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 const DATE_FILTERS: { label: string; days: number }[] = [
   { label: "이번 주", days: 7 },
@@ -430,11 +429,12 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate }: {
+function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate, categories }: {
   sport: string|null; region: string|null; dateDays: number|null;
   onSport: (v: string|null) => void;
   onRegion: (v: string|null) => void;
   onDate: (v: number|null) => void;
+  categories: string[];
 }) {
   return (
     <div className="sticky z-40" style={{ top: 64,
@@ -443,7 +443,7 @@ function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate }: {
       borderBottom: "0.5px solid rgba(108,60,225,0.12)" }}>
       <div className="max-w-[1200px] mx-auto px-6 py-3" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <FilterRow label="종목">
-          {SPORT_FILTERS.map((s) => (
+          {categories.map((s) => (
             <Chip key={s} label={s} active={sport === s}
               onClick={() => onSport(sport === s ? null : s)} />
           ))}
@@ -758,6 +758,10 @@ export default function HomeClient({
   const router      = useRouter();
   const searchParams = useSearchParams();
 
+  const categories = [...new Set(
+    tournaments.map((t) => t.sports?.category).filter(Boolean) as string[]
+  )];
+
   const [search,      setSearch]      = useState("");
   const [sport,       setSport]       = useState<string|null>(null);
   const [region,      setRegion]      = useState<string|null>(null);
@@ -933,7 +937,7 @@ export default function HomeClient({
         onSearch={(v) => { setSearch(v); updateURL(sport, region, dateDays, v); }}
         count={tournaments.length}
       />
-      <FilterBar sport={sport} region={region} dateDays={dateDays}
+      <FilterBar sport={sport} region={region} dateDays={dateDays} categories={categories}
         onSport={(v)  => { setSport(v);    updateURL(v,     region,   dateDays, search); }}
         onRegion={(v) => { setRegion(v);   updateURL(sport, v,        dateDays, search); }}
         onDate={(v)   => { setDateDays(v); updateURL(sport, region,   v,        search); }}

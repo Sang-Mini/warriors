@@ -35,6 +35,7 @@ export type TournamentDetail = {
   created_at: string | null;
   registration_start: string | null;
   is_beginner_friendly: boolean;
+  tags: string[] | null;
   sports: { name: string; category: string; emoji: string | null } | null;
 };
 
@@ -541,6 +542,14 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
                     {t.sports.name}
                   </span>
                 )}
+                {t.tags?.map((tag) => (
+                  <span key={tag} className="font-suit font-bold"
+                    style={{ display: "inline-flex", alignItems: "center",
+                      fontSize: 11, padding: "3px 10px",
+                      borderRadius: 100, background: cat.bg, color: cat.fg }}>
+                    #{tag}
+                  </span>
+                ))}
                 {t.is_beginner_friendly && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4,
                     fontSize: 11, fontWeight: 700, padding: "3px 10px",

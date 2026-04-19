@@ -8,6 +8,7 @@ const EXTENDED_COLS = `
   organizer,
   start_time,
   registration_start,
+  tags,
 `;
 
 const BASE_SELECT = `
@@ -61,6 +62,7 @@ function buildTournament(raw: Record<string, unknown>): TournamentDetail {
     organizer:            (raw.organizer            as string  | null) ?? null,
     created_at:           (raw.created_at           as string  | null) ?? null,
     registration_start:   (raw.registration_start   as string  | null) ?? null,
+    tags:                 (raw.tags                  as string[] | null) ?? null,
     is_beginner_friendly: (raw.is_beginner_friendly as boolean | null) ?? false,
     sports:               sports as TournamentDetail["sports"],
   };
