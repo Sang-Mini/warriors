@@ -429,12 +429,14 @@ function FilterRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate, categories }: {
-  sport: string|null; region: string|null; dateDays: number|null;
+function FilterBar({ sport, sportName, region, dateDays, onSport, onSportName, onRegion, onDate, categories, subSports }: {
+  sport: string|null; sportName: string|null; region: string|null; dateDays: number|null;
   onSport: (v: string|null) => void;
+  onSportName: (v: string|null) => void;
   onRegion: (v: string|null) => void;
   onDate: (v: number|null) => void;
   categories: string[];
+  subSports: string[];
 }) {
   return (
     <div className="sticky z-40" style={{ top: 64,
@@ -448,6 +450,14 @@ function FilterBar({ sport, region, dateDays, onSport, onRegion, onDate, categor
               onClick={() => onSport(sport === s ? null : s)} />
           ))}
         </FilterRow>
+        {sport && subSports.length > 0 && (
+          <FilterRow label="">
+            {subSports.map((s) => (
+              <Chip key={s} label={s} active={sportName === s}
+                onClick={() => onSportName(sportName === s ? null : s)} />
+            ))}
+          </FilterRow>
+        )}
         <FilterRow label="지역">
           {REGION_FILTERS.map((r) => (
             <Chip key={r} label={r} active={region === r}
@@ -764,6 +774,7 @@ export default function HomeClient({
 
   const [search,      setSearch]      = useState("");
   const [sport,       setSport]       = useState<string|null>(null);
+  const [sportName,   setSportName]   = useState<string|null>(null);
   const [region,      setRegion]      = useState<string|null>(null);
   const [dateDays,    setDateDays]    = useState<number|null>(null);
   const [currentUser,   setCurrentUser]   = useState<User | null>(null);
@@ -776,12 +787,27 @@ export default function HomeClient({
   const [isLoading,    setIsLoading]    = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  const subSports = useMemo(() =>
+    sport
+      ? [...new Set(
+          tournaments
+            .filter((t) => t.sports?.category === sport)
+            .map((t) => t.sports?.name)
+            .filter(Boolean) as string[]
+        )]
+      : [],
+  [tournaments, sport]);
+
   const filtered = useMemo(() => tournaments.filter((t) => {
     const q = search.toLowerCase();
     if (q && !t.title.toLowerCase().includes(q) &&
         !t.region.toLowerCase().includes(q) &&
         !(t.sports?.name ?? "").toLowerCase().includes(q)) return false;
-    if (sport    && t.sports?.category !== sport)  return false;
+    if (sportName) {
+      if (t.sports?.name !== sportName) return false;
+    } else if (sport) {
+      if (t.sports?.category !== sport) return false;
+    }
     if (region   && t.region           !== region) return false;
     if (dateDays != null) {
       const d = getDday(t.start_date);
@@ -794,7 +820,7 @@ export default function HomeClient({
   useEffect(() => {
     setDisplayCount(PAGE_SZ);
     setIsLoading(false);
-  }, [search, sport, region, dateDays]);
+  }, [search, sport, sportName, region, dateDays]);
 
   const displayed = useMemo(
     () => filtered.slice(0, displayCount),
@@ -856,6 +882,7 @@ export default function HomeClient({
   // URL 파라미터 → 필터 상태 동기화 (초기 로드 + 브라우저 뒤로/앞으로)
   useEffect(() => {
     setSport(searchParams.get("category"));
+    setSportName(searchParams.get("sport_name"));
     setRegion(searchParams.get("region"));
     setSearch(searchParams.get("search") ?? "");
     const per = searchParams.get("period");
@@ -868,14 +895,16 @@ export default function HomeClient({
 
   // 필터 상태 → URL 파라미터 업데이트
   const updateURL = useCallback((
-    sport_:    string | null,
-    region_:   string | null,
-    dateDays_: number | null,
-    search_:   string,
+    sport_:     string | null,
+    sportName_: string | null,
+    region_:    string | null,
+    dateDays_:  number | null,
+    search_:    string,
   ) => {
     const p = new URLSearchParams();
-    if (sport_)    p.set("category", sport_);
-    if (region_)   p.set("region",   region_);
+    if (sport_)     p.set("category",   sport_);
+    if (sportName_) p.set("sport_name", sportName_);
+    if (region_)    p.set("region",     region_);
     const periodKey =
       dateDays_ === 7  ? "week"    :
       dateDays_ === 30 ? "month"   :
@@ -918,7 +947,7 @@ export default function HomeClient({
     }
   }, [currentUser, wishlisted, router, showToast]);
 
-  const hasFilters = !!(search || sport || region || dateDays != null);
+  const hasFilters = !!(search || sport || sportName || region || dateDays != null);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -934,13 +963,16 @@ export default function HomeClient({
       </div>
       <Hero
         search={search}
-        onSearch={(v) => { setSearch(v); updateURL(sport, region, dateDays, v); }}
+        onSearch={(v) => { setSearch(v); updateURL(sport, sportName, region, dateDays, v); }}
         count={tournaments.length}
       />
-      <FilterBar sport={sport} region={region} dateDays={dateDays} categories={categories}
-        onSport={(v)  => { setSport(v);    updateURL(v,     region,   dateDays, search); }}
-        onRegion={(v) => { setRegion(v);   updateURL(sport, v,        dateDays, search); }}
-        onDate={(v)   => { setDateDays(v); updateURL(sport, region,   v,        search); }}
+      <FilterBar
+        sport={sport} sportName={sportName} region={region} dateDays={dateDays}
+        categories={categories} subSports={subSports}
+        onSport={(v)      => { setSport(v); setSportName(null); updateURL(v,     null,       region, dateDays, search); }}
+        onSportName={(v)  => { setSportName(v);                 updateURL(sport, v,          region, dateDays, search); }}
+        onRegion={(v)     => { setRegion(v);                    updateURL(sport, sportName,  v,      dateDays, search); }}
+        onDate={(v)       => { setDateDays(v);                  updateURL(sport, sportName,  region, v,        search); }}
       />
 
       <main className="flex-1 py-10" style={{ background: "#f8f7ff" }}>
@@ -959,7 +991,7 @@ export default function HomeClient({
               </p>
               {hasFilters && (
                 <button onClick={() => {
-                  setSearch(""); setSport(null); setRegion(null); setDateDays(null);
+                  setSearch(""); setSport(null); setSportName(null); setRegion(null); setDateDays(null);
                   router.replace("/", { scroll: false });
                 }} style={{ display: "flex", alignItems: "center", gap: 5,
                   fontSize: 12, fontWeight: 600, color: C.secondary,
