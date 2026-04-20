@@ -37,6 +37,7 @@ export type Tournament = {
   location: string | null;
   description: string | null;
   fee: number | null;
+  fee_varies: boolean;
   apply_url: string | null;
   sports: Sport | null;
 };
@@ -684,7 +685,7 @@ function TournamentCard({
               ? <span className="font-suit font-bold" style={{ background: "#D1FAE5", color: "#047857",
                   borderRadius: 100, padding: "4px 10px",
                   fontSize: 12 }}>무료</span>
-              : `${t.fee.toLocaleString()}원`}
+              : `${t.fee.toLocaleString()}원${t.fee_varies ? "~" : ""}`}
         </span>
         <button onClick={(e) => { e.stopPropagation(); onSelect(t.id); }}
           className="font-suit font-bold"

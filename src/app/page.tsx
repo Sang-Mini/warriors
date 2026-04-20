@@ -43,6 +43,7 @@ export default async function HomePage() {
       location,
       description,
       fee,
+      fee_varies,
       apply_url,
       sports!sport_id ( name, category, emoji )
     `
@@ -77,6 +78,7 @@ export default async function HomePage() {
       location: (raw.location as string | null) ?? null,
       description: (raw.description as string | null) ?? null,
       fee: (raw.fee as number | null) ?? null,
+      fee_varies: (raw.fee_varies as boolean | null) ?? false,
       apply_url: (raw.apply_url as string | null) ?? null,
       sports: sports as Tournament["sports"],
     };

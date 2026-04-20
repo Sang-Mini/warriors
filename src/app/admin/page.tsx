@@ -23,7 +23,7 @@ export default async function AdminPage() {
     .from("tournaments")
     .select(`
       id, title, region, start_date, deadline, registration_start,
-      location, fee, apply_url, is_beginner_friendly, description,
+      location, fee, fee_varies, apply_url, is_beginner_friendly, description,
       poster_url, sport_id, tags,
       sports ( name, emoji )
     `)
@@ -44,6 +44,7 @@ export default async function AdminPage() {
       deadline:             (raw.deadline            as string | null) ?? null,
       location:             (raw.location            as string | null) ?? null,
       fee:                  (raw.fee                 as number | null) ?? null,
+      fee_varies:           (raw.fee_varies          as boolean | null) ?? false,
       apply_url:            (raw.apply_url           as string | null) ?? null,
       is_beginner_friendly: (raw.is_beginner_friendly as boolean | null) ?? false,
       description:          (raw.description         as string | null) ?? null,
@@ -71,6 +72,7 @@ export type AdminTournament = {
   deadline: string | null;
   location: string | null;
   fee: number | null;
+  fee_varies: boolean;
   apply_url: string | null;
   is_beginner_friendly: boolean;
   description: string | null;

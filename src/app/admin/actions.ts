@@ -29,6 +29,7 @@ export type TournamentInput = {
   region: string;
   location: string | null;
   fee: number | null;
+  fee_varies: boolean;
   apply_url: string | null;
   is_beginner_friendly: boolean;
   description: string | null;

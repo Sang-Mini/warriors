@@ -29,6 +29,7 @@ const EMPTY_FORM: TournamentInput = {
   region: "",
   location: null,
   fee: null,
+  fee_varies: false,
   apply_url: null,
   is_beginner_friendly: false,
   description: null,
@@ -138,6 +139,7 @@ export default function AdminClient({
       region: t.region,
       location: t.location,
       fee: t.fee,
+      fee_varies: (t as AdminTournament & { fee_varies?: boolean }).fee_varies ?? false,
       apply_url: t.apply_url,
       is_beginner_friendly: t.is_beginner_friendly,
       description: t.description,
@@ -364,6 +366,15 @@ export default function AdminClient({
                   onChange={(e) => setField("fee", e.target.value === "" ? null : Number(e.target.value))}
                   placeholder="0"
                 />
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 7,
+                  fontSize: 13, color: C.sub, cursor: "pointer", marginTop: 4 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.fee_varies ?? false}
+                    onChange={(e) => setField("fee_varies", e.target.checked)}
+                  />
+                  코스별 참가비 다름
+                </label>
               </Field>
 
               {/* 신청 링크 */}
