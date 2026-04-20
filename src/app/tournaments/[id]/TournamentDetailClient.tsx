@@ -601,24 +601,27 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                       <a href={`https://map.naver.com/search/${encodeURIComponent(t.location)}`}
                         target="_blank" rel="noopener noreferrer"
-                        className="text-xs px-2 py-1 rounded"
-                        style={{ background: "#22c55e", color: "#fff", fontWeight: 600,
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4,
+                          background: "#03C75A", color: "#fff",
+                          borderRadius: 6, padding: "5px 10px",
+                          fontSize: 12, fontWeight: 500,
                           textDecoration: "none", whiteSpace: "nowrap" }}>
-                        네이버
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        네이버지도
                       </a>
                       <a href={`https://map.kakao.com/link/search/${encodeURIComponent(t.location)}`}
                         target="_blank" rel="noopener noreferrer"
-                        className="text-xs px-2 py-1 rounded"
-                        style={{ background: "#facc15", color: "#000", fontWeight: 600,
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4,
+                          background: "#FEE500", color: "#3C1E1E",
+                          borderRadius: 6, padding: "5px 10px",
+                          fontSize: 12, fontWeight: 500,
                           textDecoration: "none", whiteSpace: "nowrap" }}>
-                        카카오
-                      </a>
-                      <a href={`https://tmap.life/search?name=${encodeURIComponent(t.location)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="text-xs px-2 py-1 rounded"
-                        style={{ background: "#ef4444", color: "#fff", fontWeight: 600,
-                          textDecoration: "none", whiteSpace: "nowrap" }}>
-                        티맵
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        카카오맵
                       </a>
                       <button onClick={copyLocation} title="주소 복사"
                         aria-label="주소 복사"
