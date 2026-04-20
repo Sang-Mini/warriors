@@ -47,6 +47,7 @@ export default async function HomePage() {
       sports!sport_id ( name, category, emoji )
     `
     )
+    .eq("is_visible", true)
     .gte("start_date", today)
     .order("start_date", { ascending: true });
 
