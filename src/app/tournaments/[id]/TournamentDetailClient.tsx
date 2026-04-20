@@ -598,19 +598,42 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
                 </InfoRow>
                 <InfoRow icon={<PinIcon />} label="대회 장소"
                   action={t.location && (
-                    <button onClick={copyLocation} title="주소 복사"
-                      aria-label="주소 복사"
-                      style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7,
-                        background: "rgba(108,60,225,0.08)",
-                        border: "none", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: `background 150ms ${EASE}` }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.16)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.08)"; }}
-                      onMouseDown={(e)  => { e.currentTarget.style.transform = "scale(0.88)"; }}
-                      onMouseUp={(e)    => { e.currentTarget.style.transform = "scale(1)"; }}>
-                      <CopyIcon />
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                      <a href={`https://map.naver.com/search/${encodeURIComponent(t.location)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ background: "#22c55e", color: "#fff", fontWeight: 600,
+                          textDecoration: "none", whiteSpace: "nowrap" }}>
+                        네이버
+                      </a>
+                      <a href={`https://map.kakao.com/link/search/${encodeURIComponent(t.location)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ background: "#facc15", color: "#000", fontWeight: 600,
+                          textDecoration: "none", whiteSpace: "nowrap" }}>
+                        카카오
+                      </a>
+                      <a href={`https://tmap.life/search?name=${encodeURIComponent(t.location)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ background: "#ef4444", color: "#fff", fontWeight: 600,
+                          textDecoration: "none", whiteSpace: "nowrap" }}>
+                        티맵
+                      </a>
+                      <button onClick={copyLocation} title="주소 복사"
+                        aria-label="주소 복사"
+                        style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                          background: "rgba(108,60,225,0.08)",
+                          border: "none", cursor: "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: `background 150ms ${EASE}` }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.16)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.08)"; }}
+                        onMouseDown={(e)  => { e.currentTarget.style.transform = "scale(0.88)"; }}
+                        onMouseUp={(e)    => { e.currentTarget.style.transform = "scale(1)"; }}>
+                        <CopyIcon />
+                      </button>
+                    </div>
                   )}>
                   {[t.region, t.location].filter(Boolean).join(" · ")}
                 </InfoRow>
