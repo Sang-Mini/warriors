@@ -596,27 +596,29 @@ export default function TournamentDetailClient({ t }: { t: TournamentDetail }) {
                 <InfoRow icon={<CalIcon />} label="대회 날짜">
                   {fmtDate(t.start_date, t.start_time)}
                 </InfoRow>
-                <InfoRow icon={<PinIcon />} label="대회 장소"
-                  action={t.location && (
-                    <button onClick={copyLocation} title="주소 복사"
-                      aria-label="주소 복사"
-                      style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7,
-                        background: "rgba(108,60,225,0.08)",
-                        border: "none", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: `background 150ms ${EASE}` }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.16)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.08)"; }}
-                      onMouseDown={(e)  => { e.currentTarget.style.transform = "scale(0.88)"; }}
-                      onMouseUp={(e)    => { e.currentTarget.style.transform = "scale(1)"; }}>
-                      <CopyIcon />
-                    </button>
-                  )}>
+                <InfoRow icon={<PinIcon />} label="대회 장소">
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text,
-                      fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
-                      {[t.region, t.location].filter(Boolean).join(" · ")}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.text,
+                        fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
+                        {[t.region, t.location].filter(Boolean).join(" · ")}
+                      </span>
+                      {t.location && (
+                        <button onClick={copyLocation} title="주소 복사"
+                          aria-label="주소 복사"
+                          style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 7,
+                            background: "rgba(108,60,225,0.08)",
+                            border: "none", cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            transition: `background 150ms ${EASE}` }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.16)"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(108,60,225,0.08)"; }}
+                          onMouseDown={(e)  => { e.currentTarget.style.transform = "scale(0.88)"; }}
+                          onMouseUp={(e)    => { e.currentTarget.style.transform = "scale(1)"; }}>
+                          <CopyIcon />
+                        </button>
+                      )}
+                    </div>
                     {t.location && (
                       <div style={{ display: "flex", gap: 4 }}>
                         <a href={`https://map.naver.com/search/${encodeURIComponent(t.location)}`}
