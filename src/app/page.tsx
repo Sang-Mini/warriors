@@ -45,6 +45,7 @@ export default async function HomePage() {
       fee,
       fee_varies,
       apply_url,
+      created_at,
       sports!sport_id ( name, category, emoji )
     `
     )
@@ -80,6 +81,7 @@ export default async function HomePage() {
       fee: (raw.fee as number | null) ?? null,
       fee_varies: (raw.fee_varies as boolean | null) ?? false,
       apply_url: (raw.apply_url as string | null) ?? null,
+      created_at: (raw.created_at as string | null) ?? null,
       sports: sports as Tournament["sports"],
     };
   });

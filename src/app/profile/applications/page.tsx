@@ -16,7 +16,7 @@ export default async function ApplicationsPage() {
       applied_at,
       tournaments (
         id, title, region, start_date, deadline,
-        location, description, fee, fee_varies, apply_url,
+        location, description, fee, fee_varies, apply_url, created_at,
         sports ( name, category, emoji )
       )
     `)
@@ -39,6 +39,7 @@ export default async function ApplicationsPage() {
         fee:         (t.fee        as number | null) ?? null,
         fee_varies:  (t.fee_varies as boolean | null) ?? false,
         apply_url:   (t.apply_url  as string | null) ?? null,
+        created_at:  (t.created_at as string | null) ?? null,
         sports: sportsRaw ? {
           name:     sportsRaw.name     as string,
           category: sportsRaw.category as string,

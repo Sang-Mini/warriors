@@ -39,11 +39,21 @@ export type Tournament = {
   fee: number | null;
   fee_varies: boolean;
   apply_url: string | null;
+  created_at: string | null;
   sports: Sport | null;
 };
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 const REGION_FILTERS = ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+
+type SortKey = "date_asc" | "date_desc" | "deadline_asc" | "created_desc" | "fee_asc";
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "date_asc",      label: "대회일 빠른 순" },
+  { value: "date_desc",     label: "대회일 늦은 순" },
+  { value: "deadline_asc",  label: "접수 마감 임박 순" },
+  { value: "created_desc",  label: "최근 등록 순" },
+  { value: "fee_asc",       label: "참가비 낮은 순" },
+];
 const DATE_FILTERS: { label: string; days: number }[] = [
   { label: "이번 주", days: 7 },
   { label: "2주 이내", days: 14 },
@@ -835,6 +845,7 @@ export default function HomeClient({
   const [sportName,   setSportName]   = useState<string|null>(null);
   const [region,      setRegion]      = useState<string|null>(null);
   const [dateDays,    setDateDays]    = useState<number|null>(null);
+  const [sortKey,     setSortKey]     = useState<SortKey>("date_asc");
   const [currentUser,   setCurrentUser]   = useState<User | null>(null);
   const [wishlisted,    setWishlisted]    = useState<Set<string>>(new Set());
   const [toastMsg,      setToastMsg]      = useState("");
@@ -874,17 +885,48 @@ export default function HomeClient({
     return true;
   }), [tournaments, search, sport, region, dateDays]);
 
-  // 필터 변경 시 목록 초기화
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    switch (sortKey) {
+      case "date_desc":
+        return arr.sort((a, b) => b.start_date.localeCompare(a.start_date));
+      case "deadline_asc":
+        return arr.sort((a, b) => {
+          if (!a.deadline && !b.deadline) return 0;
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+          return a.deadline.localeCompare(b.deadline);
+        });
+      case "created_desc":
+        return arr.sort((a, b) => {
+          if (!a.created_at && !b.created_at) return 0;
+          if (!a.created_at) return 1;
+          if (!b.created_at) return -1;
+          return b.created_at.localeCompare(a.created_at);
+        });
+      case "fee_asc":
+        return arr.sort((a, b) => {
+          if (a.fee == null && b.fee == null) return 0;
+          if (a.fee == null) return 1;
+          if (b.fee == null) return -1;
+          return a.fee - b.fee;
+        });
+      default: // date_asc
+        return arr.sort((a, b) => a.start_date.localeCompare(b.start_date));
+    }
+  }, [filtered, sortKey]);
+
+  // 필터/정렬 변경 시 목록 초기화
   useEffect(() => {
     setDisplayCount(PAGE_SZ);
     setIsLoading(false);
-  }, [search, sport, sportName, region, dateDays]);
+  }, [search, sport, sportName, region, dateDays, sortKey]);
 
   const displayed = useMemo(
-    () => filtered.slice(0, displayCount),
-    [filtered, displayCount]
+    () => sorted.slice(0, displayCount),
+    [sorted, displayCount]
   );
-  const hasMore = displayCount < filtered.length;
+  const hasMore = displayCount < sorted.length;
 
   // 추가 로드 실행
   const loadMore = useCallback(() => {
@@ -894,11 +936,11 @@ export default function HomeClient({
   useEffect(() => {
     if (!isLoading) return;
     const t = setTimeout(() => {
-      setDisplayCount((prev) => Math.min(prev + PAGE_SZ, filtered.length));
+      setDisplayCount((prev) => Math.min(prev + PAGE_SZ, sorted.length));
       setIsLoading(false);
     }, 350);
     return () => clearTimeout(t);
-  }, [isLoading, filtered.length]);
+  }, [isLoading, sorted.length]);
 
   // IntersectionObserver — sentinel 감지
   useEffect(() => {
@@ -949,6 +991,8 @@ export default function HomeClient({
       per === "month"   ? 30 :
       per === "3months" ? 90 : null
     );
+    const s = searchParams.get("sort");
+    setSortKey((s as SortKey | null) ?? "date_asc");
   }, [searchParams]);
 
   // 필터 상태 → URL 파라미터 업데이트
@@ -958,6 +1002,7 @@ export default function HomeClient({
     region_:    string | null,
     dateDays_:  number | null,
     search_:    string,
+    sort_:      SortKey = "date_asc",
   ) => {
     const p = new URLSearchParams();
     if (sport_)     p.set("category",   sport_);
@@ -967,8 +1012,9 @@ export default function HomeClient({
       dateDays_ === 7  ? "week"    :
       dateDays_ === 30 ? "month"   :
       dateDays_ === 90 ? "3months" : null;
-    if (periodKey) p.set("period",   periodKey);
-    if (search_)   p.set("search",   search_);
+    if (periodKey)              p.set("period", periodKey);
+    if (search_)                p.set("search", search_);
+    if (sort_ !== "date_asc")   p.set("sort",   sort_);
     const qs = p.toString();
     router.replace(qs ? `/?${qs}` : "/", { scroll: false });
   }, [router]);
@@ -1021,36 +1067,64 @@ export default function HomeClient({
       </div>
       <Hero
         search={search}
-        onSearch={(v) => { setSearch(v); updateURL(sport, sportName, region, dateDays, v); }}
+        onSearch={(v) => { setSearch(v); updateURL(sport, sportName, region, dateDays, v, sortKey); }}
         count={tournaments.length}
       />
       <FilterBar
         sport={sport} sportName={sportName} region={region} dateDays={dateDays}
         categories={categories} subSports={subSports}
-        onSport={(v)      => { setSport(v); setSportName(null); updateURL(v,     null,       region, dateDays, search); }}
-        onSportName={(v)  => { setSportName(v);                 updateURL(sport, v,          region, dateDays, search); }}
-        onRegion={(v)     => { setRegion(v);                    updateURL(sport, sportName,  v,      dateDays, search); }}
-        onDate={(v)       => { setDateDays(v);                  updateURL(sport, sportName,  region, v,        search); }}
+        onSport={(v)      => { setSport(v); setSportName(null); updateURL(v,     null,       region, dateDays, search, sortKey); }}
+        onSportName={(v)  => { setSportName(v);                 updateURL(sport, v,          region, dateDays, search, sortKey); }}
+        onRegion={(v)     => { setRegion(v);                    updateURL(sport, sportName,  v,      dateDays, search, sortKey); }}
+        onDate={(v)       => { setDateDays(v);                  updateURL(sport, sportName,  region, v,        search, sortKey); }}
       />
 
       <main className="flex-1 py-10" style={{ background: "#f8f7ff" }}>
         <div className="max-w-[1200px] mx-auto px-6">
 
-          {/* 결과 카운트 / 필터 초기화 */}
+          {/* 결과 카운트 / 정렬 / 필터 초기화 */}
           {!errorMessage && (
             <div className="flex items-center justify-between mb-6">
-              <p style={{ fontSize: 13, color: C.sub }}>
-                대회{" "}
-                <span style={{ fontWeight: 700, color: C.text,
-                  fontVariantNumeric: "tabular-nums" }}>
-                  {filtered.length}개
-                </span>
-                {hasFilters && " (필터 적용됨)"}
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <p style={{ fontSize: 13, color: C.sub }}>
+                  대회{" "}
+                  <span style={{ fontWeight: 700, color: C.text,
+                    fontVariantNumeric: "tabular-nums" }}>
+                    {sorted.length}개
+                  </span>
+                  {hasFilters && " (필터 적용됨)"}
+                </p>
+                <select
+                  value={sortKey}
+                  onChange={(e) => {
+                    const v = e.target.value as SortKey;
+                    setSortKey(v);
+                    updateURL(sport, sportName, region, dateDays, search, v);
+                  }}
+                  style={{
+                    height: 30, padding: "0 28px 0 10px", borderRadius: 8,
+                    border: `1px solid rgba(108,60,225,0.20)`,
+                    background: "#fff", color: C.text,
+                    fontSize: 12, fontWeight: 500, cursor: "pointer",
+                    appearance: "none", WebkitAppearance: "none",
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236C3CE1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 9px center",
+                    outline: "none",
+                    transition: `border-color 150ms ${EASE}`,
+                  }}
+                  onFocus={(e)      => { e.currentTarget.style.borderColor = C.secondary; }}
+                  onBlur={(e)       => { e.currentTarget.style.borderColor = "rgba(108,60,225,0.20)"; }}
+                >
+                  {SORT_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
               {hasFilters && (
                 <button onClick={() => {
                   setSearch(""); setSport(null); setSportName(null); setRegion(null); setDateDays(null);
-                  router.replace("/", { scroll: false });
+                  updateURL(null, null, null, null, "", sortKey);
                 }} style={{ display: "flex", alignItems: "center", gap: 5,
                   fontSize: 12, fontWeight: 600, color: C.secondary,
                   background: "none", border: "none", cursor: "pointer",
@@ -1073,7 +1147,7 @@ export default function HomeClient({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {errorMessage ? (
               <ErrorState message={errorMessage} />
-            ) : filtered.length === 0 ? (
+            ) : sorted.length === 0 ? (
               <EmptyState hasFilters={hasFilters} />
             ) : (
               displayed.map((t) => (
@@ -1088,7 +1162,7 @@ export default function HomeClient({
           </div>
 
           {/* 무한 스크롤 sentinel + 상태 */}
-          {!errorMessage && filtered.length > 0 && (
+          {!errorMessage && sorted.length > 0 && (
             <>
               {/* sentinel: 이 div가 뷰포트에 들어오면 로드 트리거 */}
               <div ref={sentinelRef} style={{ height: 1 }} />
